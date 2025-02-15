@@ -4,7 +4,6 @@ import numpy as np
 from os import path
 from math import sqrt
 import matplotlib.pyplot as plt
-from scipy.signal import find_peaks  # For detecting peaks (elbow point)
 
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
@@ -72,7 +71,7 @@ def compute_wcss(data, labels, centroids):
     return wcss
 
 # Elbow Method to find optimal k
-def elbow_method(data, max_k=10):
+def elbow_method(data, max_k=10, threshold=0.5):
     wcss_values = []
     for k in range(1, max_k + 1):
         labels, centroids, _ = k_means(data, k)
@@ -92,13 +91,15 @@ def elbow_method(data, max_k=10):
     plt.title("Elbow Method for Optimal k")
     plt.show()
 
-    # Use find_peaks to detect the "elbow" point where the rate of decrease slows
-    peaks, _ = find_peaks(-np.array(wcss_values))  # Negative to detect the "elbow" (local minima)
-    
-    if len(peaks) > 0:
-        optimal_k = peaks[0] + 1  # Index of the first peak is the optimal k (adjusted by 1)
+    percentage_drops = [(wcss_values[i - 1] - wcss_values[i]) / wcss_values[i - 1] for i in range(1, len(wcss_values))]
+
+    # Determine the optimal k based on threshold for significant percentage drop
+    for i, drop in enumerate(percentage_drops):
+        if drop < threshold:  # If drop becomes smaller than the threshold, we've found the elbow
+            optimal_k = i + 1  # `i + 1` because `percentage_drops` starts at k=2
+            break
     else:
-        optimal_k = 3  # Default fall-back value if no peak is found
+        print("Most Optimal K was  Not Found")
     
     print(f"Optimal number of clusters (k) determined automatically: {optimal_k}")
     return wcss_values, optimal_k
