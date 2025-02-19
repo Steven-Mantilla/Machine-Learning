@@ -8,17 +8,13 @@ import matplotlib.pyplot as plt
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
 DATA_DIR = path.join(PROJECT_ROOT, "Datasets")
-DATA_FILE = path.join(DATA_DIR, "plant_growth_data.csv")
+DATA_FILE = path.join(DATA_DIR, "plant_growth_data_classification.csv")
 
 # Load dataset
 df = pd.read_csv(DATA_FILE)
 
-# Encode categorical feature: Water_Frequency
-water_mapping = {"bi-weekly": 1, "weekly": 2, "daily": 3}
-df["Water_Frequency_Encoded"] = df["Water_Frequency"].map(water_mapping)
-
 # Select features for clustering
-features = df[["Sunlight_Hours", "Humidity", "Water_Frequency_Encoded"]].values
+features = df[["Sunlight_Hours", "Soil_Type", "Water_Frequency"]].values
 
 # Euclidean distance function
 def euclidean_distance(p1, p2):
@@ -63,6 +59,7 @@ def k_means(data, k, max_iters=100):
     return labels, centroids, clusters
 
 # Compute WCSS for the elbow method
+# wcss = optimal k-sizes
 def compute_wcss(data, labels, centroids):
     wcss = 0
     for i, centroid in enumerate(centroids):
@@ -96,7 +93,7 @@ def elbow_method(data, max_k=10, threshold=0.5):
     # Determine the optimal k based on threshold for significant percentage drop
     for i, drop in enumerate(percentage_drops):
         if drop < threshold:  # If drop becomes smaller than the threshold, we've found the elbow
-            optimal_k = i + 1  # `i + 1` because `percentage_drops` starts at k=2
+            optimal_k = i + 1
             break
     else:
         print("Most Optimal K was  Not Found")
