@@ -213,3 +213,5 @@ plt.title(f"3D Scatter Plot of Clusters (k={optimal_k}, First 100 Rows)")
 
 # Show the plot
 plt.show()
+
+#sdlkfjdskljfs
