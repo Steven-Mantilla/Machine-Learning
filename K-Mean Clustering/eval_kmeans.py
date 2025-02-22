@@ -1,60 +1,47 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from os import path
 from sklearn.model_selection import train_test_split
 
-# Define paths
-PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
-DATA_DIR = path.join(PROJECT_ROOT, "Datasets")
-CLUSTERED_FILE = path.join(DATA_DIR, "wine_clustered.csv")
-
 # Load clustered dataset
-df = pd.read_csv(CLUSTERED_FILE)
+df = pd.read_csv("Datasets/wine_clustered.csv")
 
 # Split dataset into 70% training and 30% testing
 train_df, test_df = train_test_split(df, test_size=0.3, random_state=42, stratify=df["Class"])
 
 # Extract actual labels and predicted clusters for test set
-true_labels = test_df["Class"].values  # Wine dataset classes: 1, 2, 3
-predicted_clusters = test_df["Cluster"].values  # K-Means assigned clusters
+true_labels = test_df["Class"].values
+predicted_clusters = test_df["Cluster"].values
 
 # Map clusters to actual labels using majority voting
-cluster_to_label = {}
-for cluster in np.unique(predicted_clusters):
-    cluster_points = train_df[train_df["Cluster"] == cluster]  # Use training set for mapping
-    if not cluster_points.empty:
-        most_common_label = cluster_points["Class"].mode()[0]  # Most frequent class in this cluster
-        cluster_to_label[cluster] = most_common_label
+cluster_to_label = {
+    cluster: train_df[train_df["Cluster"] == cluster]["Class"].mode()[0]
+    for cluster in np.unique(predicted_clusters)
+    if not train_df[train_df["Cluster"] == cluster].empty
+}
 
 # Assign new predicted labels based on the mapping
-mapped_predictions = np.array([cluster_to_label.get(c, -1) for c in predicted_clusters])  # Handle unmapped cases
+mapped_predictions = np.array([cluster_to_label.get(c, -1) for c in predicted_clusters])
 
 # Create confusion matrix manually
-unique_labels = np.unique(true_labels)  # Ensure we use the original labels (1, 2, 3)
+unique_labels = np.unique(true_labels)
 num_classes = len(unique_labels)
 conf_matrix = np.zeros((num_classes, num_classes), dtype=int)
+label_to_index = {label: idx for idx, label in enumerate(unique_labels)}
 
-# Populate the confusion matrix
-label_to_index = {label: idx for idx, label in enumerate(unique_labels)}  # Mapping class to index
 for true, pred in zip(true_labels, mapped_predictions):
-    if pred in label_to_index:  # Ensure valid mapping
+    if pred in label_to_index:
         conf_matrix[label_to_index[true], label_to_index[pred]] += 1
 
-# Compute precision, recall, and F1-score manually for each class
-precision = []
-recall = []
-f1_scores = []
+# Compute precision, recall, and F1-score manually
+precision, recall, f1_scores = [], [], []
 for i in range(num_classes):
     TP = conf_matrix[i, i]
-    FP = sum(conf_matrix[:, i]) - TP
-    FN = sum(conf_matrix[i, :]) - TP
-    precision_i = TP / (TP + FP) if (TP + FP) > 0 else 0
-    recall_i = TP / (TP + FN) if (TP + FN) > 0 else 0
-    f1_i = 2 * (precision_i * recall_i) / (precision_i + recall_i) if (precision_i + recall_i) > 0 else 0
-    precision.append(precision_i)
-    recall.append(recall_i)
-    f1_scores.append(f1_i)
+    FP = conf_matrix[:, i].sum() - TP
+    FN = conf_matrix[i, :].sum() - TP
+    precision.append(TP / (TP + FP) if TP + FP > 0 else 0)
+    recall.append(TP / (TP + FN) if TP + FN > 0 else 0)
+    f1_scores.append(2 * precision[-1] * recall[-1] / (precision[-1] + recall[-1]) if precision[-1] + recall[-1] > 0 else 0)
 
 # Display results
 print("\nConfusion Matrix:")
