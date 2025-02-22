@@ -1,53 +1,28 @@
 import pandas as pd
 import random
 import numpy as np
-from os import path
 import math
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from mpl_toolkits.mplot3d import Axes3D
+from os import path
+from sklearn.preprocessing import LabelEncoder
 
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
 DATA_DIR = path.join(PROJECT_ROOT, "Datasets")
-DATA_FILE = path.join(DATA_DIR, "wine.data")
+DATA_FILE = path.join(DATA_DIR, "plant_growth_data.csv")
 
 # Load dataset
-column_names = [
-    "Class",  # Label
-    "Alcohol",  # Feature 1
-    "Malic acid",  # Feature 2
-    "Ash",
-    "Alcalinity of ash",
-    "Magnesium",
-    "Total phenols",
-    "Flavanoids",  # Feature 3
-    "Nonflavanoid phenols",
-    "Proanthocyanins",
-    "Color intensity",  # Feature 4
-    "Hue",
-    "OD280/OD315 of diluted wines",
-    "Proline"
-]
-df = pd.read_csv(DATA_FILE, header=None, names=column_names)
+df = pd.read_csv(DATA_FILE)
 
-# Select the first 100 rows using .loc
-df_first_100 = df.loc[:99].copy()
-
-# Select only the required features
-selected_features = ["Alcohol", "Flavanoids", "Malic acid"]
-X_first_100 = df_first_100[selected_features]
-
-# Normalize the features
-scaler = StandardScaler()
-X_normalized_first_100 = scaler.fit_transform(X_first_100)
-X_normalized_first_100_df = pd.DataFrame(X_normalized_first_100, columns=selected_features)
-
-# Combine normalized features into a single dataset
-processed_df_first_100 = X_normalized_first_100_df
+# Encode categorical features
+label_encoders = {}
+for column in ["Soil_Type", "Water_Frequency"]:
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le  # Store the encoders for reference
 
 # Select features for clustering
-features_first_100 = processed_df_first_100.values
+features = df[["Sunlight_Hours", "Soil_Type", "Water_Frequency"]].values
 
 # Euclidean distance function
 def euclidean_distance(p1, p2):
@@ -115,19 +90,13 @@ def compute_angle(p1, p2, p3):
         return 180  # Return a flat angle if one of the vectors is zero
 
     cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
-
-    # Handle potential floating-point precision errors
-    if cos_theta < -1:
-        cos_theta = -1
-    elif cos_theta > 1:
-        cos_theta = 1
-
-    # Compute the raw angle
+    cos_theta = max(min(cos_theta, 1), -1)  # Clamp to avoid numerical errors
     angle = math.acos(cos_theta)
     return math.degrees(angle)
 
+
 # Elbow Method to find optimal k
-def elbow_method(data, max_k=10):
+def elbow_method(data, max_k=10, threshold=0.5):
     wcss_values = []
     for k in range(1, max_k + 1):
         labels, centroids, _ = k_means(data, k)
@@ -154,15 +123,8 @@ def elbow_method(data, max_k=10):
         p2 = wcss_values[i]
         p3 = wcss_values[i + 1]
 
-        # Debug: Print the points being used for angle calculation
-        print(f"Points for angle calculation: p1={p1}, p2={p2}, p3={p3}")
-
         angle = compute_angle(p1, p2, p3)
         angles.append(angle)
-
-        # Debug: Print the computed angle
-        print(f"Angle for k={i + 1}: {angle} degrees")
-
     # Find the optimal k based on the smallest angle
     if angles:
         optimal_k_index = angles.index(min(angles))
@@ -174,44 +136,16 @@ def elbow_method(data, max_k=10):
 
     return wcss_values, optimal_k
 
+
 # Find the optimal k using the elbow method
-wcss_values, optimal_k = elbow_method(features_first_100)
+wcss_values, optimal_k = elbow_method(features)
 
 # Run k-means with the optimal k
-labels_first_100, centroids_first_100, clusters_first_100 = k_means(features_first_100, optimal_k)
-
-# Add the 'Cluster' column using .loc
-df_first_100.loc[:, "Cluster"] = labels_first_100
+labels, centroids, clusters = k_means(features, optimal_k)
 
 # Save results
-output_file_first_100 = path.join(DATA_DIR, "wine_clustered_first_100.csv")
-df_first_100.to_csv(output_file_first_100, index=False)
+df["Cluster"] = labels
+output_file = path.join(DATA_DIR, "plant_growth_clustered.csv")
+df.to_csv(output_file, index=False)
 
-print(f"Clustering complete. Results saved to {output_file_first_100}.")
-
-# Visualize the clusters in 3D
-fig = plt.figure(figsize=(10, 7))
-ax = fig.add_subplot(111, projection='3d')
-
-# Scatter plot for each cluster
-scatter = ax.scatter(
-    df_first_100["Alcohol"],  # X-axis: Alcohol
-    df_first_100["Flavanoids"],  # Y-axis: Flavanoids
-    df_first_100["Malic acid"],  # Z-axis: Malic Acid
-    c=df_first_100["Cluster"],  # Color by cluster
-    cmap="viridis",  # Color map
-    s=50,  # Marker size
-    depthshade=True  # Add depth shading
-)
-
-# Add labels and title
-ax.set_xlabel("Alcohol")
-ax.set_ylabel("Flavanoids")
-ax.set_zlabel("Malic Acid")
-plt.colorbar(scatter, label="Cluster")
-plt.title(f"3D Scatter Plot of Clusters (k={optimal_k}, First 100 Rows)")
-
-# Show the plot
-plt.show()
-
-#sdlkfjdskljfs
+print(f"Clustering complete. Results saved to {output_file}.")

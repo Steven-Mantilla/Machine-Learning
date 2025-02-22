@@ -1,55 +1,36 @@
 import pandas as pd
 import random
 import numpy as np
-from os import path
 import math
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from mpl_toolkits.mplot3d import Axes3D
+from os import path
 
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
 DATA_DIR = path.join(PROJECT_ROOT, "Datasets")
-DATA_FILE = path.join(DATA_DIR, "plant_growth_data.csv")
+DATA_FILE = path.join(DATA_DIR, "wine.data")
 
 # Load dataset
 column_names = [
-    "Class",  # Label
-    "Alcohol",  # Feature 1
-    "Malic acid",  # Feature 2
-    "Ash",
-    "Alcalinity of ash",
-    "Magnesium",
-    "Total phenols",
-    "Flavanoids",  # Feature 3
-    "Nonflavanoid phenols",
-    "Proanthocyanins",
-    "Color intensity",  # Feature 4
-    "Hue",
-    "OD280/OD315 of diluted wines",
-    "Proline"
+    "Class", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium",
+    "Total phenols", "Flavanoids", "Nonflavanoid phenols", "Proanthocyanins",
+    "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline"
 ]
 df = pd.read_csv(DATA_FILE, header=None, names=column_names)
 
-# Select the first 100 rows using .loc
-df_first_100 = df.loc[:99].copy()
-
-# Select only the required features
+# Select features
 selected_features = ["Alcohol", "Flavanoids", "Malic acid"]
-X_first_100 = df_first_100[selected_features]
+X = df[selected_features].values
 
-# Normalize the features
-scaler = StandardScaler()
-X_normalized_first_100 = scaler.fit_transform(X_first_100)
-X_normalized_first_100_df = pd.DataFrame(X_normalized_first_100, columns=selected_features)
+# Manual Min-Max Scaling
+def min_max_scale(data):
+    min_vals = np.min(data, axis=0)
+    max_vals = np.max(data, axis=0)
+    return (data - min_vals) / (max_vals - min_vals), min_vals, max_vals
 
-# Combine normalized features into a single dataset
-processed_df_first_100 = X_normalized_first_100_df
+X_scaled, min_vals, max_vals = min_max_scale(X)
 
-# Select features for clustering
-features_first_100 = processed_df_first_100.values
-
-# Euclidean distance function
+# Euclidean Distance Function
 def euclidean_distance(p1, p2):
     return math.sqrt(sum((p1[i] - p2[i]) ** 2 for i in range(len(p1))))
 
@@ -70,19 +51,16 @@ def assign_clusters(data, centroids):
 
 # Compute new centroids
 def compute_centroids(clusters):
-    new_centroids = []
-    for cluster in clusters:
-        if cluster:
-            new_centroids.append(np.mean(cluster, axis=0).tolist())
-    return new_centroids
+    return [np.mean(cluster, axis=0).tolist() if cluster else random.choice(clusters[0]) for cluster in clusters]
 
 # Check if centroids have converged
 def has_converged(old_centroids, new_centroids):
     return all(euclidean_distance(old, new) < 1e-6 for old, new in zip(old_centroids, new_centroids))
 
 # K-Means clustering function
-def k_means(data, k, max_iters=100):
+def k_means(data, k):
     centroids = initialize_centroids(data, k)
+    max_iters = len(data)  # Set iterations to dataset size
     for _ in range(max_iters):
         clusters, labels = assign_clusters(data, centroids)
         new_centroids = compute_centroids(clusters)
@@ -91,7 +69,7 @@ def k_means(data, k, max_iters=100):
         centroids = new_centroids
     return labels, centroids, clusters
 
-# Compute WCSS for the elbow method
+# Compute WCSS for Elbow Method
 def compute_wcss(data, labels, centroids):
     wcss = 0
     for i, centroid in enumerate(centroids):
@@ -99,119 +77,112 @@ def compute_wcss(data, labels, centroids):
         wcss += sum(euclidean_distance(point, centroid) ** 2 for point in cluster_points)
     return wcss
 
-# Compute angle between three points (1D)
+# Compute angle for Elbow Method
 def compute_angle(p1, p2, p3):
-    # Treat points as 1D (only y-values)
-    v1 = p1 - p2
-    v2 = p3 - p2
+    """
+    Computes the angle between three points in 2D space.
+    The points represent (k, WCSS) values for the Elbow Method.
+    """
+    v1 = np.array(p1) - np.array(p2)
+    v2 = np.array(p3) - np.array(p2)
+    
+    # Compute cosine similarity
+    dot_product = np.dot(v1, v2)
+    norm_v1 = np.linalg.norm(v1)
+    norm_v2 = np.linalg.norm(v2)
+    
+    if norm_v1 == 0 or norm_v2 == 0:
+        return 180  # Avoid division by zero
+    
+    cos_theta = dot_product / (norm_v1 * norm_v2)
+    cos_theta = np.clip(cos_theta, -1, 1)  # Ensure numerical stability
+    return np.degrees(np.arccos(cos_theta))
 
-    # Calculate the angle using the dot product formula
-    dot_product = v1 * v2
-    magnitude_v1 = abs(v1)
-    magnitude_v2 = abs(v2)
-
-    # Avoid division by zero
-    if magnitude_v1 == 0 or magnitude_v2 == 0:
-        return 180  # Return a flat angle if one of the vectors is zero
-
-    cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
-
-    # Handle potential floating-point precision errors
-    if cos_theta < -1:
-        cos_theta = -1
-    elif cos_theta > 1:
-        cos_theta = 1
-
-    # Compute the raw angle
-    angle = math.acos(cos_theta)
-    return math.degrees(angle)
-
-# Elbow Method to find optimal k
 def elbow_method(data, max_k=10):
+    """
+    Implements the Elbow Method with the improved angle calculation.
+    Selects the k where the WCSS curve bends the most.
+    """
     wcss_values = []
-    for k in range(1, max_k + 1):
-        labels, centroids, _ = k_means(data, k)
-        wcss = compute_wcss(data, labels, centroids)
-        wcss_values.append(wcss)
+    k_values = list(range(1, max_k + 1))
 
+    for k in k_values:
+        labels, centroids, _ = k_means(data, k)
+        wcss_values.append(compute_wcss(data, labels, centroids))
+        
     # Print the computed WCSS values
     print("WCSS values for different k values:")
     for k, wcss in enumerate(wcss_values, 1):
         print(f"k={k}: {wcss}")
+        
+    # Compute angles between consecutive points
+    angles = []
+    for i in range(1, len(k_values) - 1):
+        p1 = (k_values[i - 1], wcss_values[i - 1])
+        p2 = (k_values[i], wcss_values[i])
+        p3 = (k_values[i + 1], wcss_values[i + 1])
+        angles.append(compute_angle(p1, p2, p3))
+    print("Angles computed for each k:")
+    for i, angle in enumerate(angles):
+        print(f"k={i+2}: {angle:.4f} degrees")
 
-    # Plot Elbow Graph
+
+    # Optimal k is the one with the largest angle (sharpest bend)
+    optimal_k_index = np.argmin(angles)  # Find the index of the smallest angle
+    optimal_k = optimal_k_index + 2  # Since angles start from k=2
+    print(f"Selected k={optimal_k} with angle={angles[optimal_k_index]:.4f}")
+        
+
+    # Plot Elbow Curve
     plt.figure(figsize=(8, 5))
-    plt.plot(range(1, max_k + 1), wcss_values, marker='o', linestyle='--')
+    plt.plot(k_values, wcss_values, marker='o', linestyle='--', label="WCSS")
+    plt.scatter(optimal_k, wcss_values[optimal_k - 1], color="red", s=150, label="Optimal k")
     plt.xlabel("Number of Clusters (k)")
     plt.ylabel("WCSS")
     plt.title("Elbow Method for Optimal k")
+    plt.legend()
     plt.show()
 
-    # Compute angles between consecutive points
-    angles = []
-    for i in range(1, len(wcss_values) - 1):
-        p1 = wcss_values[i - 1]
-        p2 = wcss_values[i]
-        p3 = wcss_values[i + 1]
+    return optimal_k
 
-        # Debug: Print the points being used for angle calculation
-        print(f"Points for angle calculation: p1={p1}, p2={p2}, p3={p3}")
+# Find optimal k
+optimal_k = elbow_method(X_scaled)
 
-        angle = compute_angle(p1, p2, p3)
-        angles.append(angle)
+# Run K-Means
+labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k)
 
-        # Debug: Print the computed angle
-        print(f"Angle for k={i + 1}: {angle} degrees")
+# Convert centroids back to original scale
+centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
 
-    # Find the optimal k based on the smallest angle
-    if angles:
-        optimal_k_index = angles.index(min(angles))
-        optimal_k = optimal_k_index + 2  # +2 because we start from k=1 and skip the first point
-        print(f"Optimal number of clusters (k) determined automatically: {optimal_k}")
-    else:
-        print("Most Optimal K was Not Found")
-        optimal_k = 1  # Default to 1 if no angles are computed
-
-    return wcss_values, optimal_k
-
-# Find the optimal k using the elbow method
-wcss_values, optimal_k = elbow_method(features_first_100)
-
-# Run k-means with the optimal k
-labels_first_100, centroids_first_100, clusters_first_100 = k_means(features_first_100, optimal_k)
-
-# Add the 'Cluster' column using .loc
-df_first_100.loc[:, "Cluster"] = labels_first_100
+# Add clusters to DataFrame
+df["Cluster"] = labels
 
 # Save results
-output_file_first_100 = path.join(DATA_DIR, "wine_clustered_first_100.csv")
-df_first_100.to_csv(output_file_first_100, index=False)
+output_file = path.join(DATA_DIR, "wine_clustered.csv")
+df.to_csv(output_file, index=False)
+print(f"Clustering complete. Results saved to {output_file}.")
 
-print(f"Clustering complete. Results saved to {output_file_first_100}.")
-
-# Visualize the clusters in 3D
+# 3D Scatter Plot with Centroids
 fig = plt.figure(figsize=(10, 7))
 ax = fig.add_subplot(111, projection='3d')
 
-# Scatter plot for each cluster
+# Plot Data Points
 scatter = ax.scatter(
-    df_first_100["Alcohol"],  # X-axis: Alcohol
-    df_first_100["Flavanoids"],  # Y-axis: Flavanoids
-    df_first_100["Malic acid"],  # Z-axis: Malic Acid
-    c=df_first_100["Cluster"],  # Color by cluster
-    cmap="viridis",  # Color map
-    s=50,  # Marker size
-    depthshade=True  # Add depth shading
+    df["Alcohol"], df["Flavanoids"], df["Malic acid"], 
+    c=df["Cluster"], cmap="viridis", s=50, label="Data Points"
 )
 
-# Add labels and title
+# Plot Centroids
+ax.scatter(
+    centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
+    c="red", marker="X", s=200, edgecolors="black", label="Centroids"
+)
+
+# Labels & Legend
 ax.set_xlabel("Alcohol")
 ax.set_ylabel("Flavanoids")
 ax.set_zlabel("Malic Acid")
 plt.colorbar(scatter, label="Cluster")
-plt.title(f"3D Scatter Plot of Clusters (k={optimal_k}, First 100 Rows)")
-
-# Show the plot
+plt.legend()
+plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
 plt.show()
-
-#sdlkfjdskljfs
