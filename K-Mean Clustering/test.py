@@ -1,9 +1,10 @@
 import pandas as pd
 import random
 import numpy as np
-from os import path
 import math
 import matplotlib.pyplot as plt
+from os import path
+from sklearn.preprocessing import LabelEncoder
 
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
@@ -13,19 +14,23 @@ DATA_FILE = path.join(DATA_DIR, "plant_growth_data_classification.csv")
 # Load dataset
 df = pd.read_csv(DATA_FILE)
 
+# Encode categorical features
+label_encoders = {}
+for column in ["Soil_Type", "Water_Frequency"]:
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le  # Store the encoders for reference
+
 # Select features for clustering
 features = df[["Sunlight_Hours", "Soil_Type", "Water_Frequency"]].values
-
 
 # Euclidean distance function
 def euclidean_distance(p1, p2):
     return math.sqrt(sum((p1[i] - p2[i]) ** 2 for i in range(len(p1))))
 
-
 # Initialize k random centroids
 def initialize_centroids(data, k):
     return random.sample(data.tolist(), k)
-
 
 # Assign each point to the nearest centroid
 def assign_clusters(data, centroids):
@@ -38,7 +43,6 @@ def assign_clusters(data, centroids):
         labels.append(cluster_index)
     return clusters, labels
 
-
 # Compute new centroids
 def compute_centroids(clusters):
     new_centroids = []
@@ -47,11 +51,9 @@ def compute_centroids(clusters):
             new_centroids.append(np.mean(cluster, axis=0).tolist())
     return new_centroids
 
-
 # Check if centroids have converged
 def has_converged(old_centroids, new_centroids):
     return all(euclidean_distance(old, new) < 1e-6 for old, new in zip(old_centroids, new_centroids))
-
 
 # K-Means clustering function
 def k_means(data, k, max_iters=100):
@@ -64,7 +66,6 @@ def k_means(data, k, max_iters=100):
         centroids = new_centroids
     return labels, centroids, clusters
 
-
 # Compute WCSS for the elbow method
 def compute_wcss(data, labels, centroids):
     wcss = 0
@@ -72,7 +73,6 @@ def compute_wcss(data, labels, centroids):
         cluster_points = [data[j] for j in range(len(data)) if labels[j] == i]
         wcss += sum(euclidean_distance(point, centroid) ** 2 for point in cluster_points)
     return wcss
-
 
 # Compute angle between three points (1D)
 def compute_angle(p1, p2, p3):
@@ -125,6 +125,7 @@ def elbow_method(data, max_k=10, threshold=0.5):
 
         angle = compute_angle(p1, p2, p3)
         angles.append(angle)
+        
 
     # Find the optimal k based on the smallest angle
     if angles:
