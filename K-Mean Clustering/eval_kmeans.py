@@ -12,21 +12,21 @@ CLUSTERED_FILE = path.join(DATA_DIR, "wine_clustered.csv")
 df = pd.read_csv(CLUSTERED_FILE)
 
 # Extract actual labels and predicted clusters
-true_labels = df["Class"].values  # Assuming "Class" contains actual wine types
+true_labels = df["Class"].values  # Wine dataset classes: 1, 2, 3
 predicted_clusters = df["Cluster"].values  # K-Means assigned clusters
 
 # Map clusters to actual labels using majority voting
 cluster_to_label = {}
 for cluster in np.unique(predicted_clusters):
     cluster_points = df[df["Cluster"] == cluster]
-    most_common_label = cluster_points["Class"].mode()[0]  # Most frequent label in this cluster
+    most_common_label = cluster_points["Class"].mode()[0]  # Most frequent class in this cluster
     cluster_to_label[cluster] = most_common_label
 
 # Assign new predicted labels based on the mapping
 mapped_predictions = np.array([cluster_to_label[c] for c in predicted_clusters])
 
 # Create confusion matrix manually
-unique_labels = np.unique(true_labels)  # Find unique wine classes
+unique_labels = np.unique(true_labels)  # Ensure we use the original labels (1, 2, 3)
 num_classes = len(unique_labels)
 conf_matrix = np.zeros((num_classes, num_classes), dtype=int)
 
