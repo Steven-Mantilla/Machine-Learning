@@ -4,7 +4,6 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from os import path
-from collections import Counter
 
 # Set fixed random seeds for reproducibility
 random.seed(42)
@@ -138,11 +137,6 @@ def elbow_method(data, max_k=10):
         optimal_k = 3  # Fallback
     print(f"Selected k={optimal_k} with angle={angles[optimal_k-2]:.4f} degrees")
     
-    plot_elbow(k_values, wcss_values, optimal_k)
-
-    return optimal_k
-
-def plot_elbow(k_values, wcss_values, optimal_k):
     # Plot Elbow Curve
     plt.figure(figsize=(8, 5))
     plt.plot(k_values, wcss_values, marker='o', linestyle='--', label="WCSS")
@@ -152,31 +146,11 @@ def plot_elbow(k_values, wcss_values, optimal_k):
     plt.title("Elbow Method for Optimal k")
     plt.legend()
     plt.show()
+    
+    return optimal_k
 
-# Assuming elbow_method(X_scaled) returns the optimal k value
-def get_optimal_k():
-    # Placeholder for the actual implementation of elbow_method
-    return elbow_method(X_scaled)
-
-
-optimal_k = get_optimal_k()
-# most_prevalent_k = []
-
-# # Run the process multiple times
-# for _ in range(100):
-#     optimal_k = get_optimal_k()
-#     most_prevalent_k.append(optimal_k)
-
-# # Count the occurrences of each k value
-# k_counter = Counter(most_prevalent_k)
-
-# # Find the most prevalent k value
-# most_common_k = k_counter.most_common(1)[0]
-
-# # Print the result
-# print(f"The most prevalent k value is {most_common_k[0]} with {most_common_k[1]} occurrences.")
-
-
+# Find optimal k using the elbow method
+optimal_k = elbow_method(X_scaled)
 
 # Run K-Means with the optimal k
 labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k, n_restarts=5)

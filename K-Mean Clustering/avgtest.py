@@ -82,15 +82,15 @@ def compute_wcss(data, labels, centroids):
 def compute_angle(p1, p2, p3):
     v1 = np.array(p1) - np.array(p2)
     v2 = np.array(p3) - np.array(p2)
-    
+
     # Compute cosine similarity
     dot_product = np.dot(v1, v2)
     norm_v1 = np.linalg.norm(v1)
     norm_v2 = np.linalg.norm(v2)
-    
+
     if norm_v1 == 0 or norm_v2 == 0:
         return 180  # Avoid division by zero
-    
+
     cos_theta = dot_product / (norm_v1 * norm_v2)
     cos_theta = np.clip(cos_theta, -1, 1)  # Ensure numerical stability
     return np.degrees(np.arccos(cos_theta))
@@ -106,7 +106,7 @@ def elbow_method(data, max_k=10):
     for k in k_values:
         labels, centroids, _ = k_means(data, k)
         wcss_values.append(compute_wcss(data, labels, centroids))
-        
+
     # Compute angles between consecutive points
     angles = []
     for i in range(1, len(k_values) - 1):
@@ -140,12 +140,22 @@ for _ in range(50):
     print(f"Optimal k={optimal_k}")
     k_values.append(optimal_k)
 
-# Find the most frequently occurring k
-most_common_k = Counter(k_values).most_common(1)[0][0]
-print(f"Most common Optimal k={most_common_k}")
+# Find the most frequently occurring k values
+top_k_counts = Counter(k_values).most_common(2)  # Get top 2 most frequent k values
+
+# Extract best and second best k
+best_k, best_k_count = top_k_counts[0]
+second_best_k, second_best_k_count = top_k_counts[1] if len(top_k_counts) > 1 else (None, None)
+
+# Print results
+print(f"Best k = {best_k} (occurred {best_k_count} times)")
+if second_best_k is not None:
+    print(f"Second Best k = {second_best_k} (occurred {second_best_k_count} times)")
+else:
+    print("No second-best k found (all values were the same).")
 
 # Run K-Means with most common k
-labels, centroids_scaled, clusters = k_means(X_scaled, most_common_k)
+labels, centroids_scaled, clusters = k_means(X_scaled, best_k)
 
 # Convert centroids back to original scale
 centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
@@ -180,5 +190,5 @@ ax.set_ylabel("Flavanoids")
 ax.set_zlabel("Malic Acid")
 plt.colorbar(scatter, label="Cluster")
 plt.legend()
-plt.title(f"3D Scatter Plot of Clusters with Centroids (k={most_common_k})")
+plt.title(f"3D Scatter Plot of Clusters with Centroids (k={best_k})")
 plt.show()
