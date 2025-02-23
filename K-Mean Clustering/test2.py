@@ -18,13 +18,13 @@ DATA_FILE = path.join(DATA_DIR, "wine.data")
 # Load dataset
 column_names = [
     "Class", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium",
-    "Total phenols", "Flavanoids", "Nonflavanoid phenols", "Proanthocyanins",
+    "Total phenols", "Flavonoids", "Nonflavonoid phenols", "Proanthocyanins",
     "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline"
 ]
 df = pd.read_csv(DATA_FILE, header=None, names=column_names)
 
 # Select features
-selected_features = ["Alcohol", "Flavanoids", "Malic acid"]
+selected_features = ["Alcohol", "Flavonoids", "Malic acid"]
 X = df[selected_features].values
 
 # Manual Min-Max Scaling
