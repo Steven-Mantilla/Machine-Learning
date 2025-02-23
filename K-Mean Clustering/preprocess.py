@@ -1,56 +1,46 @@
-# Step 1: Import Required Libraries
-import pandas as pd
-import numpy as np
 import os
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-# Step 2: Verify the Current Working Directory
-print("Current Working Directory:", os.getcwd())
-
-# Step 3: Define File Path
-file_path = "../Datasets/Mall_Customers.csv"  # Adjust if needed
-
-# Step 4: Check If File Exists
-if os.path.exists(file_path):
-    print("✅ File found! Loading dataset...")
-else:
-    print("❌ File not found. Check the file path.")
-    exit()  # Stop execution if file is missing
-
-# Step 5: Load the Dataset
+# ✅ Step 1: Load the dataset
+file_path = "Datasets/Mall_Customers.csv"  # Ensure this path is correct
 df = pd.read_csv(file_path)
 
-# Step 6: Display Basic Information
-print("\nDataset Preview:")
-print(df.head())  # Show first few rows
+# ✅ Step 2: Check for missing values
+print("🔍 Checking for missing values...\n", df.isnull().sum())
 
-# Step 7: Check for Missing Values
-print("\nMissing Values:")
-print(df.isnull().sum())  # Check for missing data
+# ✅ Step 3: Handle missing values (if any)
+df.fillna(df.mean(numeric_only=True), inplace=True)
 
-# Step 8: Drop Unnecessary Columns
-df = df.drop(columns=["CustomerID"])  # Remove CustomerID as it's not needed
+# ✅ Step 4: Encode categorical features (Gender)
+if "Gender" in df.columns:
+    encoder = LabelEncoder()
+    df["Gender"] = encoder.fit_transform(df["Gender"])  # Male → 1, Female → 0
+else:
+    print("⚠️ Warning: 'Gender' column not found. Skipping encoding.")
 
-# Step 9: Encode Categorical Data (Optional)
-encoder = LabelEncoder()
-df["Gender"] = encoder.fit_transform(df["Gender"])  # Convert 'Male' to 1, 'Female' to 0
-
-# Step 10: Standardize Numerical Features
+# ✅ Step 5: Scale numerical features
 scaler = StandardScaler()
-scaled_features = scaler.fit_transform(df[["Age", "Annual Income (k$)", "Spending Score (1-100)"]])
+numerical_columns = ["Age", "Annual Income (k$)", "Spending Score (1-100)"]
 
-# Convert the scaled data into a DataFrame
-df_scaled = pd.DataFrame(scaled_features, columns=["Age", "Annual Income", "Spending Score"])
+if all(col in df.columns for col in numerical_columns):
+    df_scaled = df.copy()
+    df_scaled[numerical_columns] = scaler.fit_transform(df[numerical_columns])
+else:
+    print("⚠️ Warning: Some numerical columns are missing!")
 
-# Step 11: Include Gender Column (Optional)
-df_scaled["Gender"] = df["Gender"]  # Add back encoded gender if needed
+# ✅ Step 6: Ensure output directory exists
+output_dir = "Datasets"
+output_path = os.path.join(output_dir, "Mall_Customers_Preprocessed.csv")
 
-# Step 12: Display Preprocessed Data
-print("\nPreprocessed Dataset Preview:")
-print(df_scaled.head())
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    print(f"📂 Created directory: {output_dir}")
 
-# Step 13: Save Preprocessed Data
-output_path = "../Datasets/Mall_Customers_Preprocessed.csv"  # Adjust if needed
+# ✅ Step 7: Save the preprocessed file
 df_scaled.to_csv(output_path, index=False)
+print(f"✅ Preprocessed file saved at: {output_path}")
 
-print(f"\n✅ Data Preprocessing Completed! Preprocessed file saved at: {output_path}")
+# ✅ Step 8: Display dataset preview
+print("\n📝 Preprocessed Dataset Preview:")
+print(df_scaled.head())
