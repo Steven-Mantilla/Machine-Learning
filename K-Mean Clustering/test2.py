@@ -158,47 +158,49 @@ def get_optimal_k():
     # Placeholder for the actual implementation of elbow_method
     return elbow_method(X_scaled)
 
-most_prevalent_k = []
 
-# Run the process multiple times
-for _ in range(100):
-    optimal_k = get_optimal_k()
-    most_prevalent_k.append(optimal_k)
+optimal_k = get_optimal_k()
+# most_prevalent_k = []
 
-# Count the occurrences of each k value
-k_counter = Counter(most_prevalent_k)
+# # Run the process multiple times
+# for _ in range(100):
+#     optimal_k = get_optimal_k()
+#     most_prevalent_k.append(optimal_k)
 
-# Find the most prevalent k value
-most_common_k = k_counter.most_common(1)[0]
+# # Count the occurrences of each k value
+# k_counter = Counter(most_prevalent_k)
 
-# Print the result
-print(f"The most prevalent k value is {most_common_k[0]} with {most_common_k[1]} occurrences.")
+# # Find the most prevalent k value
+# most_common_k = k_counter.most_common(1)[0]
+
+# # Print the result
+# print(f"The most prevalent k value is {most_common_k[0]} with {most_common_k[1]} occurrences.")
 
 
 
-# # Run K-Means with the optimal k
-# labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k, n_restarts=5)
+# Run K-Means with the optimal k
+labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k, n_restarts=5)
 
-# # Convert centroids back to original scale
-# centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
+# Convert centroids back to original scale
+centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
 
-# # Add clusters to DataFrame and save results
-# df["Cluster"] = labels
-# output_file = path.join(DATA_DIR, "wine_clustered.csv")
-# df.to_csv(output_file, index=False)
-# print(f"Clustering complete. Results saved to {output_file}.")
+# Add clusters to DataFrame and save results
+df["Cluster"] = labels
+output_file = path.join(DATA_DIR, "wine_clustered.csv")
+df.to_csv(output_file, index=False)
+print(f"Clustering complete. Results saved to {output_file}.")
 
-# # 3D Scatter Plot with Centroids
-# fig = plt.figure(figsize=(10, 7))
-# ax = fig.add_subplot(111, projection='3d')
-# scatter = ax.scatter(df["Alcohol"], df["Flavanoids"], df["Malic acid"], 
-#                      c=df["Cluster"], cmap="viridis", s=50, label="Data Points")
-# ax.scatter(centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
-#            c="red", marker="X", s=200, edgecolors="black", label="Centroids")
-# ax.set_xlabel("Alcohol")
-# ax.set_ylabel("Flavanoids")
-# ax.set_zlabel("Malic acid")
-# plt.colorbar(scatter, label="Cluster")
-# plt.legend()
-# plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
-# plt.show()
+# 3D Scatter Plot with Centroids
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(df["Alcohol"], df["Flavonoids"], df["Malic acid"], 
+                     c=df["Cluster"], cmap="viridis", s=50, label="Data Points")
+ax.scatter(centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
+           c="red", marker="X", s=200, edgecolors="black", label="Centroids")
+ax.set_xlabel("Alcohol")
+ax.set_ylabel("Flavonoids")
+ax.set_zlabel("Malic acid")
+plt.colorbar(scatter, label="Cluster")
+plt.legend()
+plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
+plt.show()
