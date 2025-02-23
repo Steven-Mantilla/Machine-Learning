@@ -111,9 +111,9 @@ def elbow_method(data, max_k=10):
         wcss_values.append(compute_wcss(data, labels, centroids))
         
     # Print the computed WCSS values
-    print("WCSS values for different k values:")
-    for k, wcss in enumerate(wcss_values, 1):
-        print(f"k={k}: {wcss}")
+    # print("WCSS values for different k values:")
+    # for k, wcss in enumerate(wcss_values, 1):
+    #     print(f"k={k}: {wcss}")
         
     # Compute angles between consecutive points
     angles = []
@@ -122,17 +122,22 @@ def elbow_method(data, max_k=10):
         p2 = (k_values[i], wcss_values[i])
         p3 = (k_values[i + 1], wcss_values[i + 1])
         angles.append(compute_angle(p1, p2, p3))
-    print("Angles computed for each k:")
-    for i, angle in enumerate(angles):
-        print(f"k={i+2}: {angle:.4f} degrees")
+    # print("Angles computed for each k:")
+    # for i, angle in enumerate(angles):
+    #     print(f"k={i+2}: {angle:.4f} degrees")
 
 
     # Optimal k is the one with the largest angle (sharpest bend)
     optimal_k_index = np.argmin(angles)  # Find the index of the smallest angle
     optimal_k = optimal_k_index + 2  # Since angles start from k=2
-    print(f"Selected k={optimal_k} with angle={angles[optimal_k_index]:.4f}")
+    # print(f"Selected k={optimal_k} with angle={angles[optimal_k_index]:.4f}")
         
 
+    #plot(wcss_values, k_values, optimal_k_index)
+
+    return optimal_k
+
+def plot(wcss_values, optimal_k, k_values):
     # Plot Elbow Curve
     plt.figure(figsize=(8, 5))
     plt.plot(k_values, wcss_values, marker='o', linestyle='--', label="WCSS")
@@ -143,46 +148,54 @@ def elbow_method(data, max_k=10):
     plt.legend()
     plt.show()
 
-    return optimal_k
-
 # Find optimal k
 optimal_k = elbow_method(X_scaled)
 
-# Run K-Means
-labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k)
+sum_optimal_k = 0
 
-# Convert centroids back to original scale
-centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
+for _ in range(50):
+    optimal_k = elbow_method(X_scaled)
+    print(f"Optimal k={optimal_k}")
+    sum_optimal_k += optimal_k
 
-# Add clusters to DataFrame
-df["Cluster"] = labels
 
-# Save results
-output_file = path.join(DATA_DIR, "wine_clustered.csv")
-df.to_csv(output_file, index=False)
-print(f"Clustering complete. Results saved to {output_file}.")
-
-# 3D Scatter Plot with Centroids
-fig = plt.figure(figsize=(10, 7))
-ax = fig.add_subplot(111, projection='3d')
-
-# Plot Data Points
-scatter = ax.scatter(
-    df["Alcohol"], df["Flavanoids"], df["Malic acid"], 
-    c=df["Cluster"], cmap="viridis", s=50, label="Data Points"
-)
-
-# Plot Centroids
-ax.scatter(
-    centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
-    c="red", marker="X", s=200, edgecolors="black", label="Centroids"
-)
-
-# Labels & Legend
-ax.set_xlabel("Alcohol")
-ax.set_ylabel("Flavanoids")
-ax.set_zlabel("Malic Acid")
-plt.colorbar(scatter, label="Cluster")
-plt.legend()
-plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
-plt.show()
+print(f"Avg Optimal k={sum_optimal_k / 50}")
+#
+# # Run K-Means
+# labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k)
+#
+# # Convert centroids back to original scale
+# centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
+#
+# # Add clusters to DataFrame
+# df["Cluster"] = labels
+#
+# # Save results
+# output_file = path.join(DATA_DIR, "wine_clustered.csv")
+# df.to_csv(output_file, index=False)
+# print(f"Clustering complete. Results saved to {output_file}.")
+#
+# # 3D Scatter Plot with Centroids
+# fig = plt.figure(figsize=(10, 7))
+# ax = fig.add_subplot(111, projection='3d')
+#
+# # Plot Data Points
+# scatter = ax.scatter(
+#     df["Alcohol"], df["Flavanoids"], df["Malic acid"],
+#     c=df["Cluster"], cmap="viridis", s=50, label="Data Points"
+# )
+#
+# # Plot Centroids
+# ax.scatter(
+#     centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
+#     c="red", marker="X", s=200, edgecolors="black", label="Centroids"
+# )
+#
+# # Labels & Legend
+# ax.set_xlabel("Alcohol")
+# ax.set_ylabel("Flavanoids")
+# ax.set_zlabel("Malic Acid")
+# plt.colorbar(scatter, label="Cluster")
+# plt.legend()
+# plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
+# plt.show()
