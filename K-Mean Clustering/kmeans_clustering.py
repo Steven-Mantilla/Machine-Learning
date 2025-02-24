@@ -12,20 +12,14 @@ np.random.seed(42)
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
 DATA_DIR = path.join(PROJECT_ROOT, "Datasets")
-DATA_FILE = path.join(DATA_DIR, "wine.data")
+DATA_FILE = path.join(DATA_DIR, "wine_class.csv")
 
 # Load dataset
-column_names = [
-    "Class", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium",
-    "Total phenols", "Flavonoids", "Nonflavonoid phenols", "Proanthocyanins",
-    "Color intensity", "Hue", "OD280/OD315 of diluted wines", "Proline"
-]
-df = pd.read_csv(DATA_FILE, header=None, names=column_names)
+df = pd.read_csv(DATA_FILE)
 
-# Select features
-selected_features = ["Alcohol", "Flavonoids", "Malic acid"]
+# Ensure the correct columns are selected (exclude 'WineClass' which is the target variable)
+selected_features = ["Alcohol", "Malic Acid", "Flavonoids"]
 X = df[selected_features].values
-
 # Manual Min-Max Scaling
 def min_max_scale(data):
     min_vals = np.min(data, axis=0)
@@ -167,13 +161,13 @@ print(f"Clustering complete. Results saved to {output_file}.")
 # 3D Scatter Plot with Centroids
 fig = plt.figure(figsize=(10, 7))
 ax = fig.add_subplot(111, projection='3d')
-scatter = ax.scatter(df["Alcohol"], df["Flavonoids"], df["Malic acid"], 
+scatter = ax.scatter(df["Alcohol"], df["Flavonoids"], df["Malic Acid"], 
                      c=df["Cluster"], cmap="viridis", s=50, label="Data Points")
 ax.scatter(centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
            c="red", marker="X", s=200, edgecolors="black", label="Centroids")
 ax.set_xlabel("Alcohol")
 ax.set_ylabel("Flavonoids")
-ax.set_zlabel("Malic acid")
+ax.set_zlabel("Malic Acid")
 plt.colorbar(scatter, label="Cluster")
 plt.legend()
 plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
