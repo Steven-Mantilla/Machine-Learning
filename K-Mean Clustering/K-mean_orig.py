@@ -4,6 +4,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from os import path
+from mpl_toolkits.mplot3d import Axes3D
 
 # Set fixed random seeds for reproducibility
 random.seed(42)
@@ -14,7 +15,7 @@ PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
 DATA_DIR = path.join(PROJECT_ROOT, "Datasets")
 DATA_FILE = path.join(DATA_DIR, "wine.data")
 
-# Load dataset
+# Load dataset with column names
 column_names = [
     "Class", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash", "Magnesium",
     "Total phenols", "Flavonoids", "Nonflavonoid phenols", "Proanthocyanins",
@@ -22,11 +23,11 @@ column_names = [
 ]
 df = pd.read_csv(DATA_FILE, header=None, names=column_names)
 
-# Select features
+# Selected features for clustering and analysis
 selected_features = ["Alcohol", "Flavonoids", "Malic acid"]
 X = df[selected_features].values
 
-# Manual Min-Max Scaling
+# Manual Min-Max Scaling (for clustering)
 def min_max_scale(data):
     min_vals = np.min(data, axis=0)
     max_vals = np.max(data, axis=0)
@@ -34,11 +35,11 @@ def min_max_scale(data):
 
 X_scaled, min_vals, max_vals = min_max_scale(X)
 
-# Euclidean Distance Function
+# Euclidean distance function
 def euclidean_distance(p1, p2):
     return math.sqrt(sum((p1[i] - p2[i]) ** 2 for i in range(len(p1))))
 
-# Initialize k random centroids (fixed seed makes this reproducible)
+# Initialize k random centroids (using random.sample)
 def initialize_centroids(data, k):
     return random.sample(data.tolist(), k)
 
@@ -55,7 +56,7 @@ def assign_clusters(data, centroids):
 
 # Compute new centroids
 def compute_centroids(clusters):
-    # If a cluster is empty, choose a random point from the entire dataset
+    # If a cluster is empty, choose a random point from the dataset (scaled)
     return [np.mean(cluster, axis=0).tolist() if cluster else random.choice(X_scaled.tolist()) 
             for cluster in clusters]
 
@@ -63,26 +64,32 @@ def compute_centroids(clusters):
 def has_converged(old_centroids, new_centroids):
     return all(euclidean_distance(old, new) < 1e-6 for old, new in zip(old_centroids, new_centroids))
 
-# K-Means clustering function with multiple random restarts
+# Single-run K-Means (returns labels, initial centroids, final centroids, clusters)
+def k_means_single_run(data, k):
+    initial_centroids = initialize_centroids(data, k)
+    centroids = initial_centroids
+    max_iters = len(data)
+    for _ in range(max_iters):
+        clusters, labels = assign_clusters(data, centroids)
+        new_centroids = compute_centroids(clusters)
+        if has_converged(centroids, new_centroids):
+            break
+        centroids = new_centroids
+    return labels, initial_centroids, centroids, clusters
+
+# K-Means clustering with multiple random restarts
 def k_means(data, k, n_restarts=5):
     best_wcss = float("inf")
     best_result = None
     for _ in range(n_restarts):
-        centroids = initialize_centroids(data, k)
-        max_iters = len(data)
-        for _ in range(max_iters):
-            clusters, labels = assign_clusters(data, centroids)
-            new_centroids = compute_centroids(clusters)
-            if has_converged(centroids, new_centroids):
-                break
-            centroids = new_centroids
+        labels, _, centroids, clusters = k_means_single_run(data, k)
         current_wcss = compute_wcss(data, labels, centroids)
         if current_wcss < best_wcss:
             best_wcss = current_wcss
             best_result = (labels, centroids, clusters)
     return best_result
 
-# Compute WCSS for Elbow Method
+# Compute WCSS for clustering result
 def compute_wcss(data, labels, centroids):
     wcss = 0
     for i, centroid in enumerate(centroids):
@@ -90,7 +97,11 @@ def compute_wcss(data, labels, centroids):
         wcss += sum(euclidean_distance(point, centroid) ** 2 for point in cluster_points)
     return wcss
 
-# Compute angle between three points in 2D space (using (k, WCSS))
+# Inverse scaling: convert scaled centroids back to original scale
+def inverse_scale(centroids_scaled, min_vals, max_vals):
+    return np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
+
+# Compute angle between three points in 2D space (each point is (k, WCSS))
 def compute_angle(p1, p2, p3):
     v1 = np.array(p1) - np.array(p2)
     v2 = np.array(p3) - np.array(p2)
@@ -106,38 +117,29 @@ def compute_angle(p1, p2, p3):
 def elbow_method(data, max_k=10):
     wcss_values = []
     k_values = list(range(1, max_k + 1))
-    
-    # For each k, run k-means with multiple restarts
     for k in k_values:
-        labels, centroids, _ = k_means(data, k, n_restarts=5)
-        wcss_values.append(compute_wcss(data, labels, centroids))
-        
-    # Print WCSS values for debugging
+        labels, centroids, clusters = k_means(data, k, n_restarts=5)
+        wcss = compute_wcss(data, labels, centroids)
+        wcss_values.append(wcss)
     print("WCSS values for different k values:")
     for k, wcss in zip(k_values, wcss_values):
         print(f"k={k}: {wcss}")
-        
-    # Compute angles between consecutive (k, WCSS) points
     angles = []
     for i in range(1, len(k_values) - 1):
-        p1 = (k_values[i - 1], wcss_values[i - 1])
+        p1 = (k_values[i-1], wcss_values[i-1])
         p2 = (k_values[i], wcss_values[i])
-        p3 = (k_values[i + 1], wcss_values[i + 1])
+        p3 = (k_values[i+1], wcss_values[i+1])
         angle = compute_angle(p1, p2, p3)
         angles.append(angle)
-    print("Angles computed for each k:")
+    print("Angles computed for each k (at k=2...max_k-1):")
     for i, angle in enumerate(angles):
         print(f"k={i+2}: {angle:.4f} degrees")
-    
-    # Select the optimal k (smallest angle indicates a sharper bend)
     if angles:
         optimal_k_index = np.argmin(angles)
         optimal_k = optimal_k_index + 2  # Because angles start at k=2
     else:
-        optimal_k = 3  # Fallback
+        optimal_k = 3
     print(f"Selected k={optimal_k} with angle={angles[optimal_k-2]:.4f} degrees")
-    
-    # Plot Elbow Curve
     plt.figure(figsize=(8, 5))
     plt.plot(k_values, wcss_values, marker='o', linestyle='--', label="WCSS")
     plt.scatter(optimal_k, wcss_values[optimal_k - 1], color="red", s=150, label="Optimal k")
@@ -146,35 +148,71 @@ def elbow_method(data, max_k=10):
     plt.title("Elbow Method for Optimal k")
     plt.legend()
     plt.show()
-    
     return optimal_k
 
 # Find optimal k using the elbow method
-optimal_k = elbow_method(X_scaled)
+optimal_k = elbow_method(X_scaled, max_k=10)
 
-# Run K-Means with the optimal k
-labels, centroids_scaled, clusters = k_means(X_scaled, optimal_k, n_restarts=5)
+# Obtain initial clustering result (single run) for the initial centroids and labels
+initial_labels, initial_centroids_scaled, _, _ = k_means_single_run(X_scaled, optimal_k)
+initial_centroids_original = inverse_scale(initial_centroids_scaled, min_vals, max_vals)
 
-# Convert centroids back to original scale
-centroids_original = np.array(centroids_scaled) * (max_vals - min_vals) + min_vals
+# Run final K-Means with multiple restarts to get final clustering result
+labels, final_centroids_scaled, clusters = k_means(X_scaled, optimal_k, n_restarts=5)
+final_centroids_original = inverse_scale(final_centroids_scaled, min_vals, max_vals)
 
-# Add clusters to DataFrame and save results
+# Add cluster assignments to DataFrame and save results
 df["Cluster"] = labels
 output_file = path.join(DATA_DIR, "wine_clustered.csv")
 df.to_csv(output_file, index=False)
 print(f"Clustering complete. Results saved to {output_file}.")
 
-# 3D Scatter Plot with Centroids
-fig = plt.figure(figsize=(10, 7))
-ax = fig.add_subplot(111, projection='3d')
-scatter = ax.scatter(df["Alcohol"], df["Flavonoids"], df["Malic acid"], 
-                     c=df["Cluster"], cmap="viridis", s=50, label="Data Points")
-ax.scatter(centroids_original[:, 0], centroids_original[:, 1], centroids_original[:, 2],
-           c="red", marker="X", s=200, edgecolors="black", label="Centroids")
-ax.set_xlabel("Alcohol")
-ax.set_ylabel("Flavonoids")
-ax.set_zlabel("Malic acid")
-plt.colorbar(scatter, label="Cluster")
-plt.legend()
-plt.title(f"3D Scatter Plot of Clusters with Centroids (k={optimal_k})")
+# Print cluster details: range (min, max, mean) of selected features and class distribution
+def print_cluster_details(df, selected_features):
+    for cluster in sorted(df["Cluster"].unique()):
+        subset = df[df["Cluster"] == cluster]
+        print(f"\nCluster {cluster}:")
+        for feat in selected_features:
+            feat_min = subset[feat].min()
+            feat_max = subset[feat].max()
+            feat_mean = subset[feat].mean()
+            print(f"  {feat}: min={feat_min:.2f}, max={feat_max:.2f}, mean={feat_mean:.2f}")
+        class_distribution = subset["Class"].value_counts().to_dict()
+        print("  Class distribution:", class_distribution)
+
+print_cluster_details(df, selected_features)
+
+# Create subplot with two 3D scatter plots:
+# Left: Data points colored by initial clustering assignments (from the initial centroids)
+# Right: Final clustering result with final centroids
+fig = plt.figure(figsize=(16, 7))
+
+# Left subplot: Initial clustering result
+ax1 = fig.add_subplot(121, projection='3d')
+# Color points by initial labels
+scatter1 = ax1.scatter(df["Alcohol"], df["Flavonoids"], df["Malic acid"], 
+                       c=initial_labels, cmap="viridis", s=50, label="Data Points (Initial)")
+ax1.scatter(initial_centroids_original[:, 0], initial_centroids_original[:, 1], 
+            initial_centroids_original[:, 2], c="red", marker="X", s=200, edgecolors="black", 
+            label="Initial Centroids")
+ax1.set_xlabel("Alcohol")
+ax1.set_ylabel("Flavonoids")
+ax1.set_zlabel("Malic acid")
+ax1.set_title("Before Clustering (Initial Assignment)")
+ax1.legend()
+
+# Right subplot: Final clustering result
+ax2 = fig.add_subplot(122, projection='3d')
+scatter2 = ax2.scatter(df["Alcohol"], df["Flavonoids"], df["Malic acid"], 
+                       c=df["Cluster"], cmap="viridis", s=50, label="Data Points (Final)")
+ax2.scatter(final_centroids_original[:, 0], final_centroids_original[:, 1], 
+            final_centroids_original[:, 2], c="red", marker="X", s=200, edgecolors="black", 
+            label="Final Centroids")
+ax2.set_xlabel("Alcohol")
+ax2.set_ylabel("Flavonoids")
+ax2.set_zlabel("Malic acid")
+ax2.set_title(f"Final Clustering (k={optimal_k})")
+ax2.legend()
+
+plt.tight_layout()
 plt.show()
