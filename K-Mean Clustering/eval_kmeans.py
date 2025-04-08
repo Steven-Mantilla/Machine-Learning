@@ -53,8 +53,8 @@ for i, label in enumerate(unique_labels):
     print(f"Recall: {recall[i]:.2f}")
     print(f"F1-score: {f1_scores[i]:.2f}")
 
-# Plot confusion matrix
-plt.figure(figsize=(6, 5))
+## Plot confusion matrix
+plt.figure(figsize=(8, 6))
 plt.imshow(conf_matrix, cmap="Blues", interpolation="nearest")
 plt.colorbar()
 plt.xticks(range(num_classes), labels=unique_labels)
@@ -62,4 +62,12 @@ plt.yticks(range(num_classes), labels=unique_labels)
 plt.xlabel("Predicted Labels")
 plt.ylabel("True Labels")
 plt.title("Confusion Matrix (Test Set)")
+
+# Add text annotations
+for i in range(num_classes):
+    for j in range(num_classes):
+        plt.text(j, i, str(conf_matrix[i, j]),
+                 ha="center", va="center", color="black")
+
+plt.tight_layout()
 plt.show()

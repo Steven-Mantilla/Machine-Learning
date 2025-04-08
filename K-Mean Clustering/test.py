@@ -7,8 +7,6 @@ from os import path
 from mpl_toolkits.mplot3d import Axes3D
 
 # Set fixed random seeds for reproducibility
-random.seed(42)
-np.random.seed(42)
 
 # Define paths
 PROJECT_ROOT = path.abspath(path.dirname(path.dirname(__file__)))
@@ -69,20 +67,23 @@ def k_means_single_run(data, k):
     initial_centroids = initialize_centroids(data, k)
     centroids = initial_centroids
     max_iters = len(data)
-    for _ in range(max_iters):
+    snapshots = []  # to record each iteration's state
+    for it in range(max_iters):
         clusters, labels = assign_clusters(data, centroids)
+        # Save a snapshot (make a deep copy of centroids and labels)
+        snapshots.append((it, [c.copy() for c in centroids], labels.copy()))
         new_centroids = compute_centroids(clusters)
         if has_converged(centroids, new_centroids):
             break
         centroids = new_centroids
-    return labels, initial_centroids, centroids, clusters
+    return labels, initial_centroids, centroids, clusters, snapshots
 
-# K-Means clustering with multiple random restarts
-def k_means(data, k, n_restarts=5):
+# K-Means clustering with multiple random restarts (selects best run by WCSS)
+def k_means(data, k, n_restarts=1):
     best_wcss = float("inf")
     best_result = None
     for _ in range(n_restarts):
-        labels, _, centroids, clusters = k_means_single_run(data, k)
+        labels, _, centroids, clusters, _ = k_means_single_run(data, k)
         current_wcss = compute_wcss(data, labels, centroids)
         if current_wcss < best_wcss:
             best_wcss = current_wcss
@@ -118,6 +119,7 @@ def elbow_method(data, max_k=10):
     wcss_values = []
     k_values = list(range(1, max_k + 1))
     for k in k_values:
+        # Use k_means (multiple restarts) for each k
         labels, centroids, clusters = k_means(data, k, n_restarts=1)
         wcss = compute_wcss(data, labels, centroids)
         wcss_values.append(wcss)
@@ -153,8 +155,8 @@ def elbow_method(data, max_k=10):
 # Find optimal k using the elbow method
 optimal_k = elbow_method(X_scaled, max_k=10)
 
-# Obtain initial clustering result (single run) for the initial centroids and labels
-initial_labels, initial_centroids_scaled, _, _ = k_means_single_run(X_scaled, optimal_k)
+# Obtain initial clustering result (single run) for the initial centroids, labels, and snapshots
+initial_labels, initial_centroids_scaled, _, _, snapshots = k_means_single_run(X_scaled, optimal_k)
 initial_centroids_original = inverse_scale(initial_centroids_scaled, min_vals, max_vals)
 
 # Run final K-Means with multiple restarts to get final clustering result
@@ -189,7 +191,6 @@ fig = plt.figure(figsize=(16, 7))
 
 # Left subplot: Initial clustering result
 ax1 = fig.add_subplot(121, projection='3d')
-# Color points by initial labels
 scatter1 = ax1.scatter(df["Alcohol"], df["Flavonoids"], df["Malic acid"], 
                        c=initial_labels, cmap="viridis", s=50, label="Data Points (Initial)")
 ax1.scatter(initial_centroids_original[:, 0], initial_centroids_original[:, 1], 
@@ -216,3 +217,40 @@ ax2.legend()
 
 plt.tight_layout()
 plt.show()
+
+# Prompt the user to view the iterative clustering process
+user_input = input("Do you want to see the iterative clustering process? (yes/no): ")
+
+if user_input.strip().lower().startswith("y"):
+    # Use the snapshots from the single run obtained earlier
+    num_iterations = len(snapshots)
+    # Decide grid layout: 2 columns, rows as needed.
+    ncols = 3
+    nrows = math.ceil(num_iterations / ncols)
+    
+    fig_iter, axes = plt.subplots(nrows, ncols, figsize=(15, 5 * nrows), subplot_kw={'projection': '3d'})
+    axes = axes.flatten()  # Flatten if more than one row
+    
+    # For each snapshot, plot data (in original scale) with the centroids from that iteration
+    for idx, (it, centroids_snapshot, labels_snapshot) in enumerate(snapshots):
+        ax = axes[idx]
+        # Plot data points with iterative labels using the same style as final clustering
+        scatter = ax.scatter(X[:, 0], X[:, 1], X[:, 2],
+                             c=labels_snapshot, cmap="viridis", s=50, label="Data Points (Iterative)")
+        # Convert centroids to original scale for visualization
+        centroids_snapshot_orig = inverse_scale(centroids_snapshot, min_vals, max_vals)
+        ax.scatter(centroids_snapshot_orig[:, 0], centroids_snapshot_orig[:, 1],
+                   centroids_snapshot_orig[:, 2], c="red", marker="X", s=200, edgecolors="black",
+                   label="Centroids (Iterative)")
+        ax.set_xlabel("Alcohol")
+        ax.set_ylabel("Flavonoids")
+        ax.set_zlabel("Malic acid")
+        ax.set_title(f"Iteration {it}")
+        ax.legend()
+    
+    # Hide any extra subplots if there are fewer snapshots than grid cells
+    for j in range(idx + 1, len(axes)):
+        fig_iter.delaxes(axes[j])
+        
+    plt.tight_layout()
+    plt.show()
