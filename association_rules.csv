@@ -1,0 +1,6 @@
+antecedents,consequents,support,confidence,lift
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medical Condition=Asthma'}),0.135,0.466,1.39
+frozenset({'Medication=Ibuprofen'}),frozenset({'Test Results=Abnormal'}),0.135,0.45,1.233
+frozenset({'Medical Condition=Cancer'}),frozenset({'Test Results=Abnormal'}),0.14,0.424,1.162
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Test Results=Abnormal'}),0.14,0.418,1.145
+frozenset({'Medical Condition=Asthma'}),frozenset({'Test Results=Inconclusive'}),0.135,0.403,1.39
