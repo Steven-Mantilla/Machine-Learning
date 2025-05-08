@@ -1,6 +1,91 @@
-antecedents,consequents,support,confidence,lift
-frozenset({'Test Results=Inconclusive'}),frozenset({'Medical Condition=Asthma'}),0.135,0.466,1.39
-frozenset({'Medication=Ibuprofen'}),frozenset({'Test Results=Abnormal'}),0.135,0.45,1.233
-frozenset({'Medical Condition=Cancer'}),frozenset({'Test Results=Abnormal'}),0.14,0.424,1.162
-frozenset({'Medical Condition=Diabetes'}),frozenset({'Test Results=Abnormal'}),0.14,0.418,1.145
-frozenset({'Medical Condition=Asthma'}),frozenset({'Test Results=Inconclusive'}),0.135,0.403,1.39
+antecedents,consequents,support,confidence
+frozenset({'Medical Condition=Asthma'}),frozenset({'Medication=Aspirin'}),0.06,0.179
+frozenset({'Medication=Aspirin'}),frozenset({'Medical Condition=Asthma'}),0.06,0.387
+frozenset({'Medical Condition=Asthma'}),frozenset({'Medication=Ibuprofen'}),0.11,0.328
+frozenset({'Medication=Ibuprofen'}),frozenset({'Medical Condition=Asthma'}),0.11,0.367
+frozenset({'Medical Condition=Asthma'}),frozenset({'Medication=Lipitor'}),0.055,0.164
+frozenset({'Medication=Lipitor'}),frozenset({'Medical Condition=Asthma'}),0.055,0.344
+frozenset({'Medical Condition=Asthma'}),frozenset({'Medication=Paracetamol'}),0.05,0.149
+frozenset({'Medication=Paracetamol'}),frozenset({'Medical Condition=Asthma'}),0.05,0.25
+frozenset({'Medical Condition=Asthma'}),frozenset({'Medication=Penicillin'}),0.06,0.179
+frozenset({'Medication=Penicillin'}),frozenset({'Medical Condition=Asthma'}),0.06,0.324
+frozenset({'Medical Condition=Asthma'}),frozenset({'Test Results=Abnormal'}),0.085,0.254
+frozenset({'Test Results=Abnormal'}),frozenset({'Medical Condition=Asthma'}),0.085,0.233
+frozenset({'Medical Condition=Asthma'}),frozenset({'Test Results=Inconclusive'}),0.135,0.403
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medical Condition=Asthma'}),0.135,0.466
+frozenset({'Medical Condition=Asthma'}),frozenset({'Test Results=Normal'}),0.115,0.343
+frozenset({'Test Results=Normal'}),frozenset({'Medical Condition=Asthma'}),0.115,0.333
+frozenset({'Medical Condition=Cancer'}),frozenset({'Medication=Ibuprofen'}),0.09,0.273
+frozenset({'Medication=Ibuprofen'}),frozenset({'Medical Condition=Cancer'}),0.09,0.3
+frozenset({'Medical Condition=Cancer'}),frozenset({'Medication=Lipitor'}),0.055,0.167
+frozenset({'Medication=Lipitor'}),frozenset({'Medical Condition=Cancer'}),0.055,0.344
+frozenset({'Medical Condition=Cancer'}),frozenset({'Medication=Paracetamol'}),0.095,0.288
+frozenset({'Medication=Paracetamol'}),frozenset({'Medical Condition=Cancer'}),0.095,0.475
+frozenset({'Medical Condition=Cancer'}),frozenset({'Medication=Penicillin'}),0.055,0.167
+frozenset({'Medication=Penicillin'}),frozenset({'Medical Condition=Cancer'}),0.055,0.297
+frozenset({'Medical Condition=Cancer'}),frozenset({'Test Results=Abnormal'}),0.14,0.424
+frozenset({'Test Results=Abnormal'}),frozenset({'Medical Condition=Cancer'}),0.14,0.384
+frozenset({'Medical Condition=Cancer'}),frozenset({'Test Results=Inconclusive'}),0.06,0.182
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medical Condition=Cancer'}),0.06,0.207
+frozenset({'Medical Condition=Cancer'}),frozenset({'Test Results=Normal'}),0.13,0.394
+frozenset({'Test Results=Normal'}),frozenset({'Medical Condition=Cancer'}),0.13,0.377
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Medication=Aspirin'}),0.06,0.179
+frozenset({'Medication=Aspirin'}),frozenset({'Medical Condition=Diabetes'}),0.06,0.387
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Medication=Ibuprofen'}),0.1,0.299
+frozenset({'Medication=Ibuprofen'}),frozenset({'Medical Condition=Diabetes'}),0.1,0.333
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Medication=Lipitor'}),0.05,0.149
+frozenset({'Medication=Lipitor'}),frozenset({'Medical Condition=Diabetes'}),0.05,0.312
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Medication=Paracetamol'}),0.055,0.164
+frozenset({'Medication=Paracetamol'}),frozenset({'Medical Condition=Diabetes'}),0.055,0.275
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Medication=Penicillin'}),0.07,0.209
+frozenset({'Medication=Penicillin'}),frozenset({'Medical Condition=Diabetes'}),0.07,0.378
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Test Results=Abnormal'}),0.14,0.418
+frozenset({'Test Results=Abnormal'}),frozenset({'Medical Condition=Diabetes'}),0.14,0.384
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Test Results=Inconclusive'}),0.095,0.284
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medical Condition=Diabetes'}),0.095,0.328
+frozenset({'Medical Condition=Diabetes'}),frozenset({'Test Results=Normal'}),0.1,0.299
+frozenset({'Test Results=Normal'}),frozenset({'Medical Condition=Diabetes'}),0.1,0.29
+frozenset({'Medication=Aspirin'}),frozenset({'Test Results=Abnormal'}),0.055,0.355
+frozenset({'Test Results=Abnormal'}),frozenset({'Medication=Aspirin'}),0.055,0.151
+frozenset({'Medication=Aspirin'}),frozenset({'Test Results=Inconclusive'}),0.05,0.323
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medication=Aspirin'}),0.05,0.172
+frozenset({'Medication=Aspirin'}),frozenset({'Test Results=Normal'}),0.05,0.323
+frozenset({'Test Results=Normal'}),frozenset({'Medication=Aspirin'}),0.05,0.145
+frozenset({'Medication=Ibuprofen'}),frozenset({'Test Results=Abnormal'}),0.135,0.45
+frozenset({'Test Results=Abnormal'}),frozenset({'Medication=Ibuprofen'}),0.135,0.37
+frozenset({'Medication=Ibuprofen'}),frozenset({'Test Results=Inconclusive'}),0.075,0.25
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medication=Ibuprofen'}),0.075,0.259
+frozenset({'Medication=Ibuprofen'}),frozenset({'Test Results=Normal'}),0.09,0.3
+frozenset({'Test Results=Normal'}),frozenset({'Medication=Ibuprofen'}),0.09,0.261
+frozenset({'Medication=Lipitor'}),frozenset({'Test Results=Abnormal'}),0.055,0.344
+frozenset({'Test Results=Abnormal'}),frozenset({'Medication=Lipitor'}),0.055,0.151
+frozenset({'Medication=Lipitor'}),frozenset({'Test Results=Inconclusive'}),0.06,0.375
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medication=Lipitor'}),0.06,0.207
+frozenset({'Medication=Paracetamol'}),frozenset({'Test Results=Abnormal'}),0.05,0.25
+frozenset({'Test Results=Abnormal'}),frozenset({'Medication=Paracetamol'}),0.05,0.137
+frozenset({'Medication=Paracetamol'}),frozenset({'Test Results=Inconclusive'}),0.06,0.3
+frozenset({'Test Results=Inconclusive'}),frozenset({'Medication=Paracetamol'}),0.06,0.207
+frozenset({'Medication=Paracetamol'}),frozenset({'Test Results=Normal'}),0.09,0.45
+frozenset({'Test Results=Normal'}),frozenset({'Medication=Paracetamol'}),0.09,0.261
+frozenset({'Medication=Penicillin'}),frozenset({'Test Results=Abnormal'}),0.07,0.378
+frozenset({'Test Results=Abnormal'}),frozenset({'Medication=Penicillin'}),0.07,0.192
+frozenset({'Medication=Penicillin'}),frozenset({'Test Results=Normal'}),0.07,0.378
+frozenset({'Test Results=Normal'}),frozenset({'Medication=Penicillin'}),0.07,0.203
+frozenset({'Medical Condition=Cancer'}),"frozenset({'Test Results=Abnormal', 'Medication=Ibuprofen'})",0.05,0.152
+frozenset({'Medication=Ibuprofen'}),"frozenset({'Medical Condition=Cancer', 'Test Results=Abnormal'})",0.05,0.167
+frozenset({'Test Results=Abnormal'}),"frozenset({'Medical Condition=Cancer', 'Medication=Ibuprofen'})",0.05,0.137
+"frozenset({'Medical Condition=Cancer', 'Medication=Ibuprofen'})",frozenset({'Test Results=Abnormal'}),0.05,0.556
+"frozenset({'Medical Condition=Cancer', 'Test Results=Abnormal'})",frozenset({'Medication=Ibuprofen'}),0.05,0.357
+"frozenset({'Test Results=Abnormal', 'Medication=Ibuprofen'})",frozenset({'Medical Condition=Cancer'}),0.05,0.37
+frozenset({'Medical Condition=Cancer'}),"frozenset({'Medication=Paracetamol', 'Test Results=Normal'})",0.05,0.152
+frozenset({'Medication=Paracetamol'}),"frozenset({'Medical Condition=Cancer', 'Test Results=Normal'})",0.05,0.25
+frozenset({'Test Results=Normal'}),"frozenset({'Medical Condition=Cancer', 'Medication=Paracetamol'})",0.05,0.145
+"frozenset({'Medical Condition=Cancer', 'Medication=Paracetamol'})",frozenset({'Test Results=Normal'}),0.05,0.526
+"frozenset({'Medical Condition=Cancer', 'Test Results=Normal'})",frozenset({'Medication=Paracetamol'}),0.05,0.385
+"frozenset({'Medication=Paracetamol', 'Test Results=Normal'})",frozenset({'Medical Condition=Cancer'}),0.05,0.556
+frozenset({'Medical Condition=Diabetes'}),"frozenset({'Test Results=Abnormal', 'Medication=Ibuprofen'})",0.055,0.164
+frozenset({'Medication=Ibuprofen'}),"frozenset({'Medical Condition=Diabetes', 'Test Results=Abnormal'})",0.055,0.183
+frozenset({'Test Results=Abnormal'}),"frozenset({'Medical Condition=Diabetes', 'Medication=Ibuprofen'})",0.055,0.151
+"frozenset({'Medical Condition=Diabetes', 'Medication=Ibuprofen'})",frozenset({'Test Results=Abnormal'}),0.055,0.55
+"frozenset({'Test Results=Abnormal', 'Medical Condition=Diabetes'})",frozenset({'Medication=Ibuprofen'}),0.055,0.393
+"frozenset({'Test Results=Abnormal', 'Medication=Ibuprofen'})",frozenset({'Medical Condition=Diabetes'}),0.055,0.407

@@ -1,3 +1,0 @@
-Association Rule Summary
-=========================
-Total rules: 5

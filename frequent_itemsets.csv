@@ -1,11 +1,51 @@
-support,itemsets
-0.365,frozenset({'Test Results=Abnormal'})
-0.345,frozenset({'Test Results=Normal'})
-0.335,frozenset({'Medical Condition=Asthma'})
-0.335,frozenset({'Medical Condition=Diabetes'})
-0.33,frozenset({'Medical Condition=Cancer'})
-0.3,frozenset({'Medication=Ibuprofen'})
-0.29,frozenset({'Test Results=Inconclusive'})
-0.2,frozenset({'Medication=Paracetamol'})
-0.185,frozenset({'Medication=Penicillin'})
-0.16,frozenset({'Medication=Lipitor'})
+itemset,support
+"('Medical Condition=Asthma',)",0.335
+"('Medical Condition=Cancer',)",0.33
+"('Medical Condition=Diabetes',)",0.335
+"('Medication=Aspirin',)",0.155
+"('Medication=Ibuprofen',)",0.3
+"('Medication=Lipitor',)",0.16
+"('Medication=Paracetamol',)",0.2
+"('Medication=Penicillin',)",0.185
+"('Test Results=Abnormal',)",0.365
+"('Test Results=Inconclusive',)",0.29
+"('Test Results=Normal',)",0.345
+"('Medical Condition=Asthma', 'Medication=Aspirin')",0.06
+"('Medical Condition=Asthma', 'Medication=Ibuprofen')",0.11
+"('Medical Condition=Asthma', 'Medication=Lipitor')",0.055
+"('Medical Condition=Asthma', 'Medication=Paracetamol')",0.05
+"('Medical Condition=Asthma', 'Medication=Penicillin')",0.06
+"('Medical Condition=Asthma', 'Test Results=Abnormal')",0.085
+"('Medical Condition=Asthma', 'Test Results=Inconclusive')",0.135
+"('Medical Condition=Asthma', 'Test Results=Normal')",0.115
+"('Medical Condition=Cancer', 'Medication=Ibuprofen')",0.09
+"('Medical Condition=Cancer', 'Medication=Lipitor')",0.055
+"('Medical Condition=Cancer', 'Medication=Paracetamol')",0.095
+"('Medical Condition=Cancer', 'Medication=Penicillin')",0.055
+"('Medical Condition=Cancer', 'Test Results=Abnormal')",0.14
+"('Medical Condition=Cancer', 'Test Results=Inconclusive')",0.06
+"('Medical Condition=Cancer', 'Test Results=Normal')",0.13
+"('Medical Condition=Diabetes', 'Medication=Aspirin')",0.06
+"('Medical Condition=Diabetes', 'Medication=Ibuprofen')",0.1
+"('Medical Condition=Diabetes', 'Medication=Lipitor')",0.05
+"('Medical Condition=Diabetes', 'Medication=Paracetamol')",0.055
+"('Medical Condition=Diabetes', 'Medication=Penicillin')",0.07
+"('Medical Condition=Diabetes', 'Test Results=Abnormal')",0.14
+"('Medical Condition=Diabetes', 'Test Results=Inconclusive')",0.095
+"('Medical Condition=Diabetes', 'Test Results=Normal')",0.1
+"('Medication=Aspirin', 'Test Results=Abnormal')",0.055
+"('Medication=Aspirin', 'Test Results=Inconclusive')",0.05
+"('Medication=Aspirin', 'Test Results=Normal')",0.05
+"('Medication=Ibuprofen', 'Test Results=Abnormal')",0.135
+"('Medication=Ibuprofen', 'Test Results=Inconclusive')",0.075
+"('Medication=Ibuprofen', 'Test Results=Normal')",0.09
+"('Medication=Lipitor', 'Test Results=Abnormal')",0.055
+"('Medication=Lipitor', 'Test Results=Inconclusive')",0.06
+"('Medication=Paracetamol', 'Test Results=Abnormal')",0.05
+"('Medication=Paracetamol', 'Test Results=Inconclusive')",0.06
+"('Medication=Paracetamol', 'Test Results=Normal')",0.09
+"('Medication=Penicillin', 'Test Results=Abnormal')",0.07
+"('Medication=Penicillin', 'Test Results=Normal')",0.07
+"('Medical Condition=Cancer', 'Medication=Ibuprofen', 'Test Results=Abnormal')",0.05
+"('Medical Condition=Cancer', 'Medication=Paracetamol', 'Test Results=Normal')",0.05
+"('Medical Condition=Diabetes', 'Medication=Ibuprofen', 'Test Results=Abnormal')",0.055
