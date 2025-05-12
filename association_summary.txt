@@ -1,0 +1,16 @@
+Association Rule Mining Summary
+====================================
+
+Total Itemsets: 50
+Top Frequent Itemsets (support >= 0.16): 10
+
+Total Rules: 90
+Strong Rules (confidence >= 0.6): 0
+Top 5 Frequent Itemsets:
+- (Test Results=Abnormal^) (support = 0.36)
+- (Test Results=Normal^) (support = 0.34)
+- (Medical Condition=Diabetes^) (support = 0.34)
+- (Medical Condition=Asthma^) (support = 0.34)
+- (Medical Condition=Cancer^) (support = 0.33)
+
+Top 5 Strong Rules:

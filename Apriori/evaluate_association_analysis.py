@@ -14,7 +14,7 @@ def clean_set(val):
     return val.strip("{}").replace("'", "").replace(",", "^")
 
 # === Clean & prepare ===
-itemsets['itemset'] = itemsets['itemsets'].apply(clean_set)
+itemsets['itemset'] = itemsets['itemset'].apply(clean_set)
 rules['antecedents'] = rules['antecedents'].apply(clean_set)
 rules['consequents'] = rules['consequents'].apply(clean_set)
 rules['rule'] = rules['antecedents'] + " => " + rules['consequents']

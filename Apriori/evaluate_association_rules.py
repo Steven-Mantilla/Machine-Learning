@@ -17,7 +17,7 @@ rules['consequents'] = rules['consequents'].apply(clean_set)
 rules['rule'] = rules['antecedents'] + " => " + rules['consequents']
 
 # Filter strong rules
-strong_rules = rules[(rules['confidence'] >= 0.6)]
+strong_rules = rules[(rules['confidence'] >= 0.5)]
 if 'lift' in rules.columns:
     strong_rules = strong_rules[strong_rules['lift'] > 1]
 

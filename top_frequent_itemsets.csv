@@ -1,0 +1,11 @@
+itemset,support
+(Test Results=Abnormal^),0.365
+(Test Results=Normal^),0.345
+(Medical Condition=Diabetes^),0.335
+(Medical Condition=Asthma^),0.335
+(Medical Condition=Cancer^),0.33
+(Medication=Ibuprofen^),0.3
+(Test Results=Inconclusive^),0.29
+(Medication=Paracetamol^),0.2
+(Medication=Penicillin^),0.185
+(Medication=Lipitor^),0.16
