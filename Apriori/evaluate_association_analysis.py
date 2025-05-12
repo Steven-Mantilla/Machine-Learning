@@ -61,7 +61,7 @@ sns.scatterplot(
     palette="coolwarm", 
     size="confidence"
 )
-plt.title("Support vs Confidence (colored by Lift)")
+plt.title("Support vs Confidence")
 plt.tight_layout()
 plt.savefig("support_vs_confidence.png")
 plt.close()
@@ -75,7 +75,7 @@ with open("association_summary.txt", "w") as f:
 
 
     f.write(f"Total Rules: {len(rules)}\n")
-    f.write(f"Strong Rules (confidence >= 0.6): {len(strong_rules)}\n")
+    f.write(f"Strong Rules (confidence >= 0.5): {len(strong_rules)}\n")
     if 'lift' in rules.columns:
         f.write(f"Strong Rules with lift > 1: {len(strong_rules)}\n\n")
     
